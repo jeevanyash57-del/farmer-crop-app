@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Farmer Crop App</title>
+
+<style>
+body{
+  font-family: Arial, sans-serif;
+  background:#f4f8f3;
+  margin:0;
+}
+.page{display:none;padding:20px;}
+.active{display:block;}
+input,select,button{
+  width:100%;padding:10px;margin:8px 0;
+  border-radius:6px;border:1px solid #ccc;
+}
+button{
+  background:#2e7d32;color:white;
+  font-weight:bold;cursor:pointer;
+}
+.card{
+  background:white;padding:20px;
+  border-radius:12px;
+  box-shadow:0 2px 8px rgba(0,0,0,0.1);
+}
+.header{
+  display:flex;justify-content:space-between;align-items:center;
+}
+.back-btn{
+  width:40px;height:40px;border-radius:50%;
+  background:#2e7d32;color:white;
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;cursor:pointer;
+}
+.crop-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:15px;
+}
+.crop{text-align:center;}
+.crop img{width:80px;height:80px;border-radius:50%;}
+.profile-icon{
+  width:40px;height:40px;border-radius:50%;
+  background:#2e7d32;color:white;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;
+}
+.error{color:red;font-size:14px;}
+.crop-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:18px;
+  margin-top:20px;
+}
+
+.crop-box{
+  background:#e8f5e9;
+  border:2px solid #2e7d32;
+  border-radius:16px;
+  padding:15px;
+  text-align:center;
+  cursor:pointer;
+  transition:0.3s ease;
+  box-shadow:0 6px 14px rgba(0,0,0,0.12);
+}
+
+.crop-box:hover{
+  transform:translateY(-6px) scale(1.04);
+  background:#c8e6c9;
+}
+
+.crop-box img{
+  width:70px;
+  height:70px;
+}
+
+.crop-box p{
+  margin-top:10px;
+  font-weight:bold;
+  color:#1b5e20;
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- LOGIN -->
+<div class="page active" id="login">
+  <select id="langSelect" onchange="setLang(this.value)"
+    style="position:absolute;top:15px;right:15px;padding:6px;border-radius:6px;">
+    <option value="en">English</option>
+    <option value="kn">ಕನ್ನಡ</option>
+    <option value="hi">हिंदी</option>
+  </select>
+
+  <div class="card">
+    <h2 id="title">Welcome Farmer 🌾</h2>
+    <p id="hint">Login using your mobile number</p>
+
+    <input id="loginMobile" placeholder="Mobile Number">
+
+    <button id="loginBtn" onclick="login()">Login</button>
+
+    <p id="regText"
+       onclick="goRegister()"
+       style="text-align:center;color:#2e7d32;
+              font-weight:bold;cursor:pointer;">
+      New user? Register here
+    </p>
+  </div>
+</div>
+
+<!-- REGISTER -->
+<div class="page" id="register">
+  <div class="card">
+    <h2>Register</h2>
+
+    <input id="name" placeholder="Full Name">
+    <input id="mobile" placeholder="Mobile Number">
+
+    <select id="country">
+      <option value="">Select Country</option>
+      <option>India</option>
+    </select>
+
+    <select id="state">
+      <option value="">Select State</option>
+      <option>Karnataka</option>
+      <option>Andhra Pradesh</option>
+    </select>
+
+    <select id="district">
+      <option value="">Select District</option>
+      <option>Bangalore</option>
+      <option>Mysore</option>
+      <option>Guntur</option>
+    </select>
+
+    <button onclick="sendOTP()">Send OTP</button>
+    <p class="error" id="regError"></p>
+
+    <div id="otpBox" style="display:none">
+      <input id="otpInput" placeholder="Enter OTP">
+      <button onclick="verifyOTP()">Verify OTP</button>
+    </div>
+  </div>
+</div>
+
+<!-- PROFILE -->
+<div class="page" id="profile">
+  <div class="header">
+    <div class="back-btn" onclick="showPage('crop')">←</div>
+    <button onclick="editProfile()">Edit</button>
+  </div>
+
+  <div class="card">
+    <h3>Profile</h3>
+    <p id="profileData"></p>
+    <button onclick="logout()">Logout</button>
+  </div>
+</div>
+
+<!-- CROP -->
+<div class="page" id="crop">
+  <div class="header">
+    <h3>Select Crop</h3>
+    <div class="profile-icon" onclick="showPage('profile')">👤</div>
+  </div>
+
+  <div class="crop-grid">
+  <div class="crop-box" onclick="openPrice('Tomato')">
+    <p>🍅<br>Tomato</br></p>
+  </div>
+
+  <div class="crop-box" onclick="openPrice('Onion')">
+    <p>🧅Onion</p>
+  </div>
+
+  <div class="crop-box" onclick="openPrice('Rice')">
+    <p>🌾<br>Rice</br></p>
+  </div>
+</div>
+
+
+<!-- PRICE -->
+<div class="page" id="price">
+  <button onclick="showPage('crop')">← Back</button>
+  <div class="card">
+    <h3 id="priceTitle"></h3>
+    <p>Government Price: ₹2400 / quintal</p>
+    <p>Nearby APMC: ₹2300 – ₹2500</p>
+  </div>
+</div>
+
+<script>
+let generatedOTP="";
+let user={};
+
+/* PAGE NAV */
+function showPage(id){
+  document.querySelectorAll('.page')
+    .forEach(p=>p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function goRegister(){showPage('register');}
+
+/* LANG */
+const LANG={
+  en:{welcome:"Welcome Farmer 🌾",hint:"Login using your mobile number",
+      login:"Login",reg:"New user? Register here"},
+  kn:{welcome:"ಸ್ವಾಗತ ರೈತ 🌾",hint:"ಮೊಬೈಲ್ ಸಂಖ್ಯೆಯಿಂದ ಲಾಗಿನ್ ಆಗಿ",
+      login:"ಲಾಗಿನ್",reg:"ಹೊಸ ಬಳಕೆದಾರ? ನೋಂದಣಿ ಮಾಡಿ"},
+  hi:{welcome:"स्वागत है किसान 🌾",hint:"मोबाइल नंबर से लॉगिन करें",
+      login:"लॉगिन",reg:"नया उपयोगकर्ता? रजिस्टर करें"}
+};
+function setLang(l){
+  title.innerText=LANG[l].welcome;
+  hint.innerText=LANG[l].hint;
+  loginBtn.innerText=LANG[l].login;
+  regText.innerText=LANG[l].reg;
+}
+
+/* LOGIN BLOCK UNREGISTERED USERS */
+function login(){
+  const mobile=document.getElementById("loginMobile").value.trim();
+  const saved=JSON.parse(localStorage.getItem("user"));
+
+  if(!saved){
+    alert("Please register first");
+    return;
+  }
+  if(mobile!==saved.mobile){
+    alert("Mobile number not registered");
+    return;
+  }
+  showPage("crop");
+}
+
+/* REGISTER + OTP */
+
+  function sendOTP(){
+  const nameVal = document.getElementById("name").value.trim();
+  const mobileVal = document.getElementById("mobile").value.trim();
+  const countryVal = document.getElementById("country").value;
+  const stateVal = document.getElementById("state").value;
+  const districtVal = document.getElementById("district").value;
+
+  if(!nameVal || !mobileVal || !countryVal || !stateVal || !districtVal){
+    document.getElementById("regError").innerText =
+      "All fields including mobile & location are mandatory";
+    return;
+  }
+
+  if(mobileVal.length !== 10 || isNaN(mobileVal)){
+    document.getElementById("regError").innerText =
+      "Enter valid 10 digit mobile number";
+    return;
+  }
+
+  document.getElementById("regError").innerText = "";
+
+  generatedOTP = Math.floor(1000 + Math.random() * 9000);
+  alert("Demo OTP: " + generatedOTP);
+
+  user = {
+    name: nameVal,
+    mobile: mobileVal,
+    country: countryVal,
+    state: stateVal,
+    district: districtVal
+  };
+
+  document.getElementById("otpBox").style.display = "block";
+}
+
+
+function verifyOTP(){
+  if(otpInput.value==generatedOTP){
+    localStorage.setItem("user",JSON.stringify(user));
+    loadProfile();
+    showPage("profile");
+  }else alert("Invalid OTP");
+}
+
+/* PROFILE */
+function loadProfile(){
+  profileData.innerHTML=
+   `<b>Name:</b> ${user.name}<br>
+    <b>Mobile:</b> ${user.mobile}<br>
+    <b>Location:</b> ${user.district}, ${user.state}`;
+}
+function editProfile(){showPage("register");}
+function logout(){showPage("login");}
+
+/* PRICE */
+function openPrice(c){
+  priceTitle.innerText=c+" Price";
+  showPage("price");
+}
+</script>
+
+</body>
+</html>
